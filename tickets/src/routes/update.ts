@@ -6,7 +6,9 @@ import {
   requireAuth,
   NotAuthorized,
 } from "@tixpal/common";
+import { TicketUpdatedPublisher } from "../events/publishers/ticket-updated-publisher";
 import { body } from "express-validator";
+import { natsWrapper } from "../nats-wrapper";
 
 const router = express.Router();
 
@@ -35,6 +37,12 @@ router.put(
     });
 
     await response.save();
+    new TicketUpdatedPublisher(natsWrapper.client).publish({
+      id: response.id!,
+      title: response.title,
+      price: response.price,
+      userId: response.userId,
+    });
     res.send(response);
   }
 );
