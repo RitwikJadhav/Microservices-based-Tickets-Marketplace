@@ -5,6 +5,7 @@ import {
   NotFoundError,
   requireAuth,
   NotAuthorized,
+  BadRequestError,
 } from "@tixpal/common";
 import { TicketUpdatedPublisher } from "../events/publishers/ticket-updated-publisher";
 import { body } from "express-validator";
@@ -25,6 +26,10 @@ router.put(
     const response = await Ticket.findById(req.params.id);
     if (!response) {
       throw new NotFoundError();
+    }
+
+    if (response.orderId) {
+      throw new BadRequestError("Cannot update a reserved ticket");
     }
 
     if (response.userId != req.currentUser!.id) {

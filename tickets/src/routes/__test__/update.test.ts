@@ -1,6 +1,7 @@
 import request from "supertest";
 import { app } from "../../app";
 import mongoose from "mongoose";
+import { Ticket } from "../../models/ticket";
 
 it("returns a 404 if the provided id does not exists", async () => {
   const id = new mongoose.Types.ObjectId().toHexString();
@@ -62,3 +63,35 @@ it("returns a 401 if the user does not own a ticket", async () => {
 // });
 
 it("updates the ticket with the provided inputs", async () => {});
+
+it("it rejects the update if the ticket is reserved", async () => {
+  const cookie = global.signup();
+  const ticket = await request(app)
+    .post("/api/tickets")
+    .set("Cookie", cookie)
+    .send({
+      title: "concert",
+      price: 20,
+    });
+  console.log(ticket.body.id);
+
+  const savedTicket = await Ticket.findById(ticket.body.id);
+  savedTicket!.set({ orderId: mongoose.Types.ObjectId().toHexString() });
+  await savedTicket!.save();
+
+  // const currentTicket = request(app)
+  //   .get(`/api/tickets/${savedTicket!.id}`)
+  //   .set("Cookie", cookie)
+  //   .send();
+
+  // console.log(currentTicket);
+
+  await request(app)
+    .put(`/api/tickets/${ticket.body.id}`)
+    .set("Cookie", cookie)
+    .send({
+      title: "sgsfd",
+      price: 10,
+    })
+    .expect(400);
+});
