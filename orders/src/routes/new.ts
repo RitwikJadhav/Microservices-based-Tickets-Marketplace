@@ -15,7 +15,7 @@ import { OrderCreatedPublisher } from "../events/publishers/order-created-publis
 
 const router = express.Router();
 
-const EXPIRATION_WINDOW = 15 * 60;
+const EXPIRATION_WINDOW = 1 * 60;
 
 router.post(
   "/api/orders",
