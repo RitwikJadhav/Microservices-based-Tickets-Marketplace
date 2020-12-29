@@ -10,6 +10,9 @@ import {
 } from "@tixpal/common";
 import { Order } from "../models/orders";
 import { stripe } from "../stripe";
+import { Payment } from "../models/payment";
+import { PaymentCreatedPublisher } from "../events/publishers/payment-created-publisher";
+import { natsWrapper } from "../nats-wrapper";
 
 const router = express.Router();
 
@@ -34,12 +37,23 @@ router.post(
         "Order is cancelled and not a valid one. You cannot proceed ahead with payment"
       );
     }
-    await stripe.charges.create({
+    const charge = await stripe.charges.create({
       currency: "usd",
       amount: order.price * 100,
       source: token,
     });
-    res.send({ success: true });
+
+    const payment = Payment.build({
+      orderId,
+      stripeId: charge.id,
+    });
+    await payment.save();
+    new PaymentCreatedPublisher(natsWrapper.client).publish({
+      id: payment.id!,
+      orderId: payment.orderId,
+      stripeId: payment.stripeId,
+    });
+    res.status(201).send({ id: payment.id });
   }
 );
 
