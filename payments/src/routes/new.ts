@@ -9,6 +9,7 @@ import {
   OrderStatus,
 } from "@tixpal/common";
 import { Order } from "../models/orders";
+import { stripe } from "../stripe";
 
 const router = express.Router();
 
@@ -20,6 +21,7 @@ router.post(
   async (req: Request, res: Response) => {
     const { token, orderId } = req.body;
     const order = await Order.findById(orderId);
+    console.log("Current Order : ", order);
     if (!order) {
       throw new NotFoundError();
     }
@@ -27,11 +29,17 @@ router.post(
       throw new NotAuthorized();
     }
     if (order.status === OrderStatus.Cancelled) {
+      console.log("Catching this error");
       throw new BadRequestError(
         "Order is cancelled and not a valid one. You cannot proceed ahead with payment"
       );
     }
-    res.send({});
+    await stripe.charges.create({
+      currency: "usd",
+      amount: order.price * 100,
+      source: token,
+    });
+    res.send({ success: true });
   }
 );
 
