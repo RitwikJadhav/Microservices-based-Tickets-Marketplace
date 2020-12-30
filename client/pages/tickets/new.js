@@ -29,8 +29,12 @@ const NewTicket = (currentUser) => {
   };
 
   let current;
-  if (!currentUser) {
-    current = <div>Please sign in to create a new ticket</div>;
+  if (currentUser.currentUser === null) {
+    current = (
+      <div>
+        <b>Please sign in to create a new ticket</b>
+      </div>
+    );
   } else {
     current = (
       <div>

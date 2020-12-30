@@ -1,4 +1,4 @@
-const OrderIndex = ({ orders }) => {
+const OrderIndex = ({ orders, currentUser }) => {
   const myOrders = orders.map((order) => {
     return (
       <tr key={order.id}>
@@ -7,22 +7,31 @@ const OrderIndex = ({ orders }) => {
       </tr>
     );
   });
-  return (
-    <div>
+  console.log(currentUser);
+  if (currentUser !== null) {
+    return (
       <div>
-        <h2>My Orders</h2>
-        <table className="table table-hover">
-          <thead className="thead-dark">
-            <tr>
-              <th>Ticket</th>
-              <th>Status</th>
-            </tr>
-          </thead>
-          <tbody>{myOrders}</tbody>
-        </table>
+        <div>
+          <h2>My Orders</h2>
+          <table className="table table-hover">
+            <thead className="thead-dark">
+              <tr>
+                <th>Ticket</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>{myOrders}</tbody>
+          </table>
+        </div>
       </div>
-    </div>
-  );
+    );
+  } else {
+    return (
+      <div>
+        <b>Please sign in to view your orders</b>
+      </div>
+    );
+  }
 };
 
 OrderIndex.getInitialProps = async (context, client) => {
